@@ -1,0 +1,124 @@
+spring:
+  application:
+    name: zimshop-api
+
+  # Database
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/zimshop}
+    username: ${DATABASE_USER:zimshop}
+    password: ${DATABASE_PASSWORD:zimshop}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+
+  # JPA
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  # Flyway migrations
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  # Redis cache
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000  # 10 minutes
+
+  # File upload
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /api/v1
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:4200,http://localhost:4201}
+
+# JWT
+jwt:
+  secret: ${JWT_SECRET:your-super-secret-key-change-in-production-min-256-bits}
+  expiration-ms: 86400000     # 24 hours
+  refresh-expiration-ms: 604800000  # 7 days
+
+# Paynow Zimbabwe
+paynow:
+  integration-id: ${PAYNOW_INTEGRATION_ID:}
+  integration-key: ${PAYNOW_INTEGRATION_KEY:}
+  return-url: ${PAYNOW_RETURN_URL:http://localhost:4201/checkout/return}
+  result-url: ${PAYNOW_RESULT_URL:http://localhost:8080/api/v1/payments/paynow/callback}
+  environment: ${PAYNOW_ENV:sandbox}  # sandbox | production
+
+# Facebook
+facebook:
+  app-id: ${FACEBOOK_APP_ID:}
+  app-secret: ${FACEBOOK_APP_SECRET:}
+  access-token: ${FACEBOOK_ACCESS_TOKEN:}
+  catalog-id: ${FACEBOOK_CATALOG_ID:}
+  page-id: ${FACEBOOK_PAGE_ID:}
+  webhook-verify-token: ${FACEBOOK_WEBHOOK_VERIFY_TOKEN:zimshop-webhook-token}
+  api-version: v18.0
+  graph-api-url: https://graph.facebook.com
+
+# WhatsApp Business
+whatsapp:
+  access-token: ${WHATSAPP_ACCESS_TOKEN:}
+  phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:}
+  business-account-id: ${WHATSAPP_BUSINESS_ACCOUNT_ID:}
+  webhook-verify-token: ${WHATSAPP_WEBHOOK_VERIFY_TOKEN:zimshop-wa-token}
+  api-url: https://graph.facebook.com/v18.0
+  storefront-url: ${STOREFRONT_URL:http://localhost:4201}
+
+# AWS S3 (for product images)
+aws:
+  s3:
+    bucket: ${AWS_S3_BUCKET:zimshop-images}
+    region: ${AWS_REGION:us-east-1}
+    access-key: ${AWS_ACCESS_KEY:}
+    secret-key: ${AWS_SECRET_KEY:}
+  cloudfront:
+    domain: ${CLOUDFRONT_DOMAIN:}
+
+# Email
+spring:
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+# Store settings
+store:
+  name: ${STORE_NAME:ZimShop}
+  currency: ${STORE_CURRENCY:USD}
+  timezone: ${STORE_TIMEZONE:Africa/Harare}
+  support-email: ${SUPPORT_EMAIL:support@zimshop.co.zw}
+  storefront-url: ${STOREFRONT_URL:http://localhost:4201}
+  admin-url: ${ADMIN_URL:http://localhost:4200}
+
+# Logging
+logging:
+  level:
+    com.zimshop: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: INFO

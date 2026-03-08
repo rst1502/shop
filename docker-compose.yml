@@ -1,0 +1,118 @@
+version: '3.9'
+
+# ═══════════════════════════════════════════════════════
+#  ZimShop — Full Stack Docker Compose
+#
+#  Quick start:
+#    1. cp .env.example .env    (fill in API keys)
+#    2. docker-compose up --build
+#    3. http://localhost:4200   (Admin — admin@zimshop.co.zw / Admin@123)
+#       http://localhost:4201   (Storefront)
+#       http://localhost:8080   (API)
+# ═══════════════════════════════════════════════════════
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: zimshop-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       ${POSTGRES_DB:-zimshop}
+      POSTGRES_USER:     ${POSTGRES_USER:-zimshop}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-zimshop_dev}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-zimshop}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  redis:
+    image: redis:7-alpine
+    container_name: zimshop-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: zimshop-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL:               jdbc:postgresql://postgres:5432/${POSTGRES_DB:-zimshop}
+      DATABASE_USER:              ${POSTGRES_USER:-zimshop}
+      DATABASE_PASSWORD:          ${POSTGRES_PASSWORD:-zimshop_dev}
+      REDIS_HOST:                 redis
+      REDIS_PORT:                 6379
+      JWT_SECRET:                 ${JWT_SECRET:-zimshop-dev-secret-minimum-256-bits-change-in-prod}
+      PAYNOW_INTEGRATION_ID:      ${PAYNOW_INTEGRATION_ID:-}
+      PAYNOW_INTEGRATION_KEY:     ${PAYNOW_INTEGRATION_KEY:-}
+      PAYNOW_ENV:                 ${PAYNOW_ENV:-sandbox}
+      PAYNOW_RETURN_URL:          ${PAYNOW_RETURN_URL:-http://localhost:4201/checkout/return}
+      PAYNOW_RESULT_URL:          ${PAYNOW_RESULT_URL:-http://localhost:8080/api/v1/payments/paynow/callback}
+      FACEBOOK_APP_ID:            ${FACEBOOK_APP_ID:-}
+      FACEBOOK_APP_SECRET:        ${FACEBOOK_APP_SECRET:-}
+      FACEBOOK_ACCESS_TOKEN:      ${FACEBOOK_ACCESS_TOKEN:-}
+      FACEBOOK_CATALOG_ID:        ${FACEBOOK_CATALOG_ID:-}
+      FACEBOOK_PAGE_ID:           ${FACEBOOK_PAGE_ID:-}
+      FACEBOOK_WEBHOOK_VERIFY_TOKEN: ${FACEBOOK_WEBHOOK_VERIFY_TOKEN:-zimshop-fb-token}
+      WHATSAPP_ACCESS_TOKEN:         ${WHATSAPP_ACCESS_TOKEN:-}
+      WHATSAPP_PHONE_NUMBER_ID:      ${WHATSAPP_PHONE_NUMBER_ID:-}
+      WHATSAPP_BUSINESS_ACCOUNT_ID:  ${WHATSAPP_BUSINESS_ACCOUNT_ID:-}
+      WHATSAPP_WEBHOOK_VERIFY_TOKEN: ${WHATSAPP_WEBHOOK_VERIFY_TOKEN:-zimshop-wa-token}
+      STOREFRONT_URL:             http://localhost:4201
+      ADMIN_URL:                  http://localhost:4200
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/v1/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  admin:
+    build:
+      context: ./apps/admin
+      dockerfile: Dockerfile
+    container_name: zimshop-admin
+    restart: unless-stopped
+    ports:
+      - "4200:80"
+    depends_on:
+      - api
+
+  storefront:
+    build:
+      context: ./apps/storefront
+      dockerfile: Dockerfile
+    container_name: zimshop-storefront
+    restart: unless-stopped
+    ports:
+      - "4201:80"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  redis_data:
