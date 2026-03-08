@@ -154,6 +154,7 @@
         <configuration>
           <source>21</source>
           <target>21</target>
+          <proc>full</proc>
           <annotationProcessorPaths>
             <path>
               <groupId>org.projectlombok</groupId>

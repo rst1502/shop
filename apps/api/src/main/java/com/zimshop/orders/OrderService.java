@@ -2,163 +2,16 @@ package com.zimshop.orders;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.zimshop.channels.whatsapp.WhatsAppService;
-import com.zimshop.common.BaseEntity;
-import com.zimshop.customers.Customer;
 import com.zimshop.products.Currency;
 import com.zimshop.products.SalesChannel;
-import jakarta.persistence.*;
-import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.*;
-
-// ─────────────────────────────────────────────
-//  Enums
-// ─────────────────────────────────────────────
-
-enum OrderStatus {
-    PENDING, PAID, PROCESSING, SHIPPED, DELIVERED, CANCELLED, REFUNDED
-}
-
-enum PaymentStatus {
-    PENDING, PAID, FAILED, REFUNDED
-}
-
-// ─────────────────────────────────────────────
-//  Order Entity
-// ─────────────────────────────────────────────
-
-@Entity
-@Table(name = "orders")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-class Order extends BaseEntity {
-
-    @Column(unique = true, nullable = false)
-    private String orderNumber;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private SalesChannel channel;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private OrderStatus status;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private PaymentStatus paymentStatus;
-
-    private String paymentMethod;
-
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    private List<OrderLineItem> lineItems = new ArrayList<>();
-
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal subtotal;
-
-    @Column(precision = 10, scale = 2)
-    private BigDecimal shippingCost = BigDecimal.ZERO;
-
-    @Column(precision = 10, scale = 2)
-    private BigDecimal taxAmount = BigDecimal.ZERO;
-
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal total;
-
-    @Enumerated(EnumType.STRING)
-    private Currency currency = Currency.USD;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
-
-    private String shippingAddressJson;
-    private String notes;
-
-    // Paynow
-    private String paynowReference;
-    private String paynowPollUrl;
-
-    // Channel-specific IDs
-    private String facebookOrderId;
-    private String whatsappPhone;
-
-    // Sequence for order numbers
-    @Column(name = "order_seq")
-    private Long orderSeq;
-}
-
-// ─────────────────────────────────────────────
-//  OrderLineItem Entity
-// ─────────────────────────────────────────────
-
-@Entity
-@Table(name = "order_line_items")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-class OrderLineItem extends BaseEntity {
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
-    private Order order;
-
-    private String productId;
-    private String variantId;
-    private String productTitle;
-    private String variantTitle;
-    private String sku;
-    private Integer quantity;
-
-    @Column(precision = 10, scale = 2)
-    private BigDecimal price;
-
-    private String imageUrl;
-}
-
-// ─────────────────────────────────────────────
-//  Repository
-// ─────────────────────────────────────────────
-
-@Repository
-interface OrderRepository extends JpaRepository<Order, UUID> {
-    Optional<Order> findByOrderNumber(String orderNumber);
-    Optional<Order> findByFacebookOrderId(String facebookOrderId);
-    Page<Order> findByStatus(OrderStatus status, Pageable pageable);
-    Page<Order> findByChannel(SalesChannel channel, Pageable pageable);
-    Page<Order> findByCustomerId(UUID customerId, Pageable pageable);
-
-    @Query("SELECT SUM(o.total) FROM Order o WHERE o.paymentStatus = 'PAID' AND o.createdAt >= :from")
-    Optional<BigDecimal> sumRevenueSince(LocalDateTime from);
-
-    @Query("SELECT COUNT(o) FROM Order o WHERE o.createdAt >= :from")
-    Long countOrdersSince(LocalDateTime from);
-}
-
-// ─────────────────────────────────────────────
-//  Request/Response DTOs
-// ─────────────────────────────────────────────
-
-record CreateOrderRequest(
-    String channel,
-    List<OrderLineItemRequest> lineItems,
-    String customerEmail,
-    String customerPhone,
-    String shippingAddress,
-    String notes
-) {}
-
-record OrderLineItemRequest(
-    String productId, String variantId,
-    String productTitle, String variantTitle,
-    int quantity, BigDecimal price
-) {}
 
 // ─────────────────────────────────────────────
 //  Service
