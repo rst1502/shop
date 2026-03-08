@@ -19,10 +19,10 @@ RUN chown zimshop:zimshop app.jar
 
 USER zimshop
 
-EXPOSE 8080
+EXPOSE 9090
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD wget -q -O- http://localhost:8080/api/v1/actuator/health || exit 1
+  CMD wget -q -O- http://localhost:9090/api/v1/actuator/health || exit 1
 
 ENTRYPOINT ["java", \
   "-XX:+UseContainerSupport", \

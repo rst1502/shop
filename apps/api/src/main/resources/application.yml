@@ -28,16 +28,14 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
 
-  # Redis cache
+  # Cache (disabled by default; override SPRING_CACHE_TYPE to re-enable)
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
   cache:
-    type: redis
-    redis:
-      time-to-live: 600000  # 10 minutes
+    type: ${SPRING_CACHE_TYPE:none}
 
   # File upload
   servlet:
@@ -45,8 +43,18 @@ spring:
       max-file-size: 10MB
       max-request-size: 50MB
 
+  # Email
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
 server:
-  port: ${PORT:8080}
+  port: ${PORT:9090}
   servlet:
     context-path: /api/v1
   cors:
@@ -63,7 +71,7 @@ paynow:
   integration-id: ${PAYNOW_INTEGRATION_ID:}
   integration-key: ${PAYNOW_INTEGRATION_KEY:}
   return-url: ${PAYNOW_RETURN_URL:http://localhost:4201/checkout/return}
-  result-url: ${PAYNOW_RESULT_URL:http://localhost:8080/api/v1/payments/paynow/callback}
+  result-url: ${PAYNOW_RESULT_URL:http://localhost:9090/api/v1/payments/paynow/callback}
   environment: ${PAYNOW_ENV:sandbox}  # sandbox | production
 
 # Facebook
@@ -95,17 +103,6 @@ aws:
     secret-key: ${AWS_SECRET_KEY:}
   cloudfront:
     domain: ${CLOUDFRONT_DOMAIN:}
-
-# Email
-spring:
-  mail:
-    host: ${MAIL_HOST:smtp.gmail.com}
-    port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:}
-    password: ${MAIL_PASSWORD:}
-    properties:
-      mail.smtp.auth: true
-      mail.smtp.starttls.enable: true
 
 # Store settings
 store:

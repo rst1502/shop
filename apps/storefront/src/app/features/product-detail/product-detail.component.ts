@@ -18,11 +18,11 @@ import { ProductService, Product, ProductVariant, CartService } from '../../core
         <!-- Images -->
         <div class="gallery">
           <div class="main-img">
-            <img *ngIf="selectedImage" [src]="selectedImage" [alt]="product.title">
+            <img *ngIf="selectedImage" [src]="selectedImage" [alt]="product?.title ?? 'Product image'">
             <div *ngIf="!selectedImage" class="img-ph">{{ icon() }}</div>
           </div>
-          <div class="thumbs" *ngIf="product.images?.length > 1">
-            <div *ngFor="let img of product.images" class="thumb" [class.active]="selectedImage===img.url" (click)="selectedImage=img.url">
+          <div class="thumbs" *ngIf="hasMultipleImages">
+            <div *ngFor="let img of images" class="thumb" [class.active]="selectedImage===img.url" (click)="selectedImage=img.url">
               <img [src]="img.url" [alt]="img.altText">
             </div>
           </div>
@@ -40,15 +40,15 @@ import { ProductService, Product, ProductVariant, CartService } from '../../core
             </div>
             <div class="channels-row">
               <span class="av-label">Available on:</span>
-              <span *ngFor="let ch of product.channels" class="ch-tag" [class]="ch.toLowerCase()">{{ chLabel(ch) }}</span>
+              <span *ngFor="let ch of channels" class="ch-tag" [class]="ch.toLowerCase()">{{ chLabel(ch) }}</span>
             </div>
           </div>
 
           <!-- Variants -->
-          <div class="section-block" *ngIf="product.variants?.length > 1">
+          <div class="section-block" *ngIf="hasMultipleVariants">
             <div class="block-label">Select option</div>
             <div class="variant-grid">
-              <button *ngFor="let v of product.variants" (click)="selectedVariant=v" class="variant-btn" [class.active]="selectedVariant?.id===v.id" [disabled]="v.inventoryQuantity===0">
+              <button *ngFor="let v of variants" (click)="selectedVariant=v" class="variant-btn" [class.active]="selectedVariant?.id===v.id" [disabled]="v.inventoryQuantity===0">
                 {{ v.title }}
                 <span *ngIf="v.inventoryQuantity===0" class="oos"> · Out of stock</span>
               </button>
@@ -90,8 +90,8 @@ import { ProductService, Product, ProductVariant, CartService } from '../../core
           </div>
 
           <!-- Tags -->
-          <div class="tags-row" *ngIf="product.tags?.length">
-            <span *ngFor="let tag of product.tags" class="tag">{{ tag }}</span>
+          <div class="tags-row" *ngIf="tags.length">
+            <span *ngFor="let tag of tags" class="tag">{{ tag }}</span>
           </div>
 
           <!-- Shipping info -->
@@ -227,6 +227,13 @@ export class ProductDetailComponent implements OnInit {
       error: () => { this.loading = false; }
     });
   }
+
+  get images() { return this.product?.images ?? []; }
+  get hasMultipleImages() { return this.images.length > 1; }
+  get variants() { return this.product?.variants ?? []; }
+  get hasMultipleVariants() { return this.variants.length > 1; }
+  get channels() { return this.product?.channels ?? []; }
+  get tags() { return this.product?.tags ?? []; }
 
   price()      { return this.selectedVariant?.price ?? 0; }
   compare()    { return this.selectedVariant?.compareAtPrice ?? 0; }

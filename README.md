@@ -15,7 +15,7 @@ zimshop/                        ← Nx Mono Repo
 ├── apps/
 │   ├── admin/                  ← Angular 17 Admin Dashboard  (port 4200)
 │   ├── storefront/             ← Angular 17 Customer Store   (port 4201)
-│   └── api/                    ← Spring Boot 3.x REST API    (port 8080)
+│   └── api/                    ← Spring Boot 3.x REST API    (port 9090)
 ├── libs/
 │   ├── shared-types/           ← Shared TypeScript interfaces
 │   └── ui-components/          ← Shared Angular components
@@ -221,7 +221,7 @@ docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 ### For Paynow webhooks in development, use ngrok:
 ```bash
-ngrok http 8080
+ngrok http 9090
 # Update PAYNOW_RESULT_URL=https://your-ngrok-url.ngrok.io/api/v1/payments/paynow/callback
 ```
 

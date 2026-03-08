@@ -24,6 +24,7 @@
     "@angular-devkit/build-angular": "^17.0.0",
     "@angular/cli": "^17.0.0",
     "@angular/compiler-cli": "^17.0.0",
+    "@types/minimatch": "^5.1.2",
     "@types/node": "^18.0.0",
     "typescript": "~5.2.2"
   }

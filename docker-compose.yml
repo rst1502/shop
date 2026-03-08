@@ -8,7 +8,7 @@ version: '3.9'
 #    2. docker-compose up --build
 #    3. http://localhost:4200   (Admin — admin@zimshop.co.zw / Admin@123)
 #       http://localhost:4201   (Storefront)
-#       http://localhost:8080   (API)
+#       http://localhost:9090   (API)
 # ═══════════════════════════════════════════════════════
 
 services:
@@ -54,19 +54,20 @@ services:
     container_name: zimshop-api
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "9090:9090"
     environment:
       DATABASE_URL:               jdbc:postgresql://postgres:5432/${POSTGRES_DB:-zimshop}
       DATABASE_USER:              ${POSTGRES_USER:-zimshop}
       DATABASE_PASSWORD:          ${POSTGRES_PASSWORD:-zimshop_dev}
       REDIS_HOST:                 redis
       REDIS_PORT:                 6379
+      SPRING_CACHE_TYPE:          none
       JWT_SECRET:                 ${JWT_SECRET:-zimshop-dev-secret-minimum-256-bits-change-in-prod}
       PAYNOW_INTEGRATION_ID:      ${PAYNOW_INTEGRATION_ID:-}
       PAYNOW_INTEGRATION_KEY:     ${PAYNOW_INTEGRATION_KEY:-}
       PAYNOW_ENV:                 ${PAYNOW_ENV:-sandbox}
       PAYNOW_RETURN_URL:          ${PAYNOW_RETURN_URL:-http://localhost:4201/checkout/return}
-      PAYNOW_RESULT_URL:          ${PAYNOW_RESULT_URL:-http://localhost:8080/api/v1/payments/paynow/callback}
+      PAYNOW_RESULT_URL:          ${PAYNOW_RESULT_URL:-http://localhost:9090/api/v1/payments/paynow/callback}
       FACEBOOK_APP_ID:            ${FACEBOOK_APP_ID:-}
       FACEBOOK_APP_SECRET:        ${FACEBOOK_APP_SECRET:-}
       FACEBOOK_ACCESS_TOKEN:      ${FACEBOOK_ACCESS_TOKEN:-}
@@ -85,7 +86,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/v1/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9090/api/v1/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
