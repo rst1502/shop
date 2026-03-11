@@ -110,7 +110,7 @@ services:
     container_name: zimshop-storefront
     restart: unless-stopped
     ports:
-      - "4201:80"
+      - "4201:4201"
     depends_on:
       - api
   nginx-lb:
