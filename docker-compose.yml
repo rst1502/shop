@@ -113,6 +113,17 @@ services:
       - "4201:80"
     depends_on:
       - api
+  nginx-lb:
+    image: nginx:stable-alpine
+    container_name: nginx-load-balancer
+    ports:
+        - "80:80"
+        - "443:443"
+    volumes:
+        - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+        - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+        - app-service
 
 volumes:
   postgres_data:

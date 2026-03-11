@@ -68,10 +68,10 @@ jwt:
 
 # Paynow Zimbabwe
 paynow:
-  integration-id: ${PAYNOW_INTEGRATION_ID:}
-  integration-key: ${PAYNOW_INTEGRATION_KEY:}
-  return-url: ${PAYNOW_RETURN_URL:http://localhost:4201/checkout/return}
-  result-url: ${PAYNOW_RESULT_URL:http://localhost:9090/api/v1/payments/paynow/callback}
+  integration-id: 16599
+  integration-key: 54edadbe-74e1-43bd-8d9f-bbf364411115
+  return-url: https://srv1341707.hstgr.cloud/checkout/return
+  result-url: https://srv1341707.hstgr.cloud/api/v1/payments/paynow/callback
   environment: ${PAYNOW_ENV:sandbox}  # sandbox | production
 
 # Facebook
