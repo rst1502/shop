@@ -123,7 +123,7 @@ services:
         - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
         - ./nginx/certs:/etc/nginx/certs:ro
     depends_on:
-        - app-service
+        - api
 
 volumes:
   postgres_data:
